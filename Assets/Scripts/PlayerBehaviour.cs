@@ -11,6 +11,10 @@ public class PlayerBehaviour : MonoBehaviour
     Rigidbody2D _rb;
     [SerializeField] WallBehaviour _wallbehaviour;
     public ScoreManager scoreManager;
+    public Background  _background;
+
+    public AudioManager audioManager;
+
 
     //[SerializeField] GroundCeilingBehaviour _GCbehaviour;
     public bool _isJover = false;
@@ -23,12 +27,13 @@ public class PlayerBehaviour : MonoBehaviour
 
     private float inputVertical;
     Coroutine x; 
+    Coroutine y;
     // Start is called before the first frame update
     void Start()
-    {
-        _rb = gameObject.GetComponent<Rigidbody2D>();
+    {   _rb = gameObject.GetComponent<Rigidbody2D>();
         StartCoroutine(_wallbehaviour.SpawnEm());
         x =StartCoroutine(Scores());
+        y = StartCoroutine(_background.SpawnEm());
     }
 
     // Update is called once per frame
@@ -58,6 +63,7 @@ public class PlayerBehaviour : MonoBehaviour
         StopCoroutine(_wallbehaviour.SpawnEm());
         //StopCoroutine(Scores());
         StopCoroutine(x);
+        StopCoroutine(y);
         ApplyForceAndDelayRoutine();
         //StopAllCoroutines();
         //_rb.AddForce(Vector2.right * 20f, ForceMode2D.Impulse);
@@ -65,6 +71,7 @@ public class PlayerBehaviour : MonoBehaviour
         
         Reset();
         scoreManager.scoreText.text = "Game Over";
+        
     }
 
     
@@ -81,7 +88,6 @@ public class PlayerBehaviour : MonoBehaviour
 
         // Wait for 200 milliseconds
         yield return new WaitForSeconds(0.5f); // 200ms delay
-        Debug.Log("shjgfgshjefghs");
         // After waiting, set the velocity
         _rb.velocity = new Vector2(0f, _rb.velocity.y);
     }
@@ -100,6 +106,7 @@ void Jump()
     // Directly set the vertical velocity for the jump, 
     // preserving the horizontal movement
     _rb.velocity = new Vector2(_rb.velocity.x, jumpVelocity);
+    audioManager.PlayWhoosh();
 }
 
     void OnCollisionEnter2D(Collision2D collision)
@@ -108,7 +115,7 @@ void Jump()
     if (collision.gameObject.CompareTag("Ground") || collision.gameObject.CompareTag("Wall")) 
     {
         _rb.velocity = new Vector2 (0f, _rb.velocity.y);
-        
+        audioManager.PlaySlap();
         _isJover = true;
     }
 }
@@ -124,6 +131,7 @@ void Jump()
     public IEnumerator Scores(){
         yield return new WaitForSeconds(17/3f);
         while (true){
+            audioManager.PlayScore();
             scoreManager.IncreaseScore();
             yield return new WaitForSeconds(5/3f);
         }
